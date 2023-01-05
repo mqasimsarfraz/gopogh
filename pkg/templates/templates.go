@@ -9,3 +9,6 @@ var ReportCSS string
 
 //go:embed report3.html
 var ReportHTML string
+
+//go:embed report3.md
+var ReportMD string

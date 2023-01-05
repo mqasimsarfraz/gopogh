@@ -96,8 +96,22 @@ func (c DisplayContent) HTML() ([]byte, error) {
 	return b.Bytes(), nil
 }
 
+// Markdown returns markdown format
+func (c DisplayContent) Markdown() ([]byte, error) {
+	t, err := template.New("out").Parse(templates.ReportMD)
+	if err != nil {
+		return nil, err
+	}
+
+	var b bytes.Buffer
+	if err := t.ExecuteTemplate(&b, "out", c); err != nil {
+		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
 // Generate generates a report
-func Generate(report models.ReportDetail, groups []models.TestGroup) (DisplayContent, error) {
+func Generate(report models.ReportDetail, groups []models.TestGroup, failedOnly bool) (DisplayContent, error) {
 	var passedTests []models.TestGroup
 	var failedTests []models.TestGroup
 	var skippedTests []models.TestGroup
@@ -112,6 +126,9 @@ func Generate(report models.ReportDetail, groups []models.TestGroup) (DisplayCon
 	}
 
 	for _, g := range groups {
+		if g.Status != fail && failedOnly {
+			continue
+		}
 		order = order + 1
 		g.Duration = g.Events[len(g.Events)-1].Elapsed
 		if g.Start.Before(startTime) {
